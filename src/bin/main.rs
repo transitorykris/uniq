@@ -19,7 +19,7 @@ fn main() -> ExitCode {
     
     let filename = match args.name {
         Some(f) => f,
-        None => "/dev/stdin".to_string(),
+        None => "/dev/stdin".to_string(),   // TODO use standard lib stdio
     };
 
     let u = uniq::Uniq::from_file(filename, args.case);
