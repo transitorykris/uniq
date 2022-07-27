@@ -10,6 +10,8 @@ struct Args {
 
     #[clap(short)]
    case: bool,
+
+   // TODO: other feature flags of a typical uniq implementation
 }
 
 fn main() -> ExitCode {
@@ -25,6 +27,7 @@ fn main() -> ExitCode {
     match u.run() {
         Ok(_) => {},
         Err(_) => {
+            // TODO: return proper values here
             return ExitCode::from(1);
         },
     };

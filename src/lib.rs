@@ -1,17 +1,23 @@
 use std::fs::File;
 use std::io::{BufReader, BufRead};
 
+// TODO: Add docstrings
+
 pub struct Uniq {
-    filename: String,
+    filename: String,   // XXX use Path here instead of String for safety
+
+    // TODO: complete case sensitivity feeature
     case: bool, // true if case sensitive, false if case insensitive
 }
 
 impl Uniq {
-    // Todo: take a buffer instead of filename
     pub fn from_file(filename: String, case: bool) -> Uniq {
+        // TODO: open the file here and store a buffer in struct Uniq
         Uniq { filename, case }
     }
 
+    // TODO: Refactor to take in a generic buffer, move file handling elsewhere
+    // Consider refactoring into an iterator to increase testability
     pub fn run(&self) -> Result<(), UniqErrors> {
         let text_file = File::open(&self.filename); // XXX a buffer of some kind
         let text_raw = match text_file {
@@ -26,6 +32,7 @@ impl Uniq {
             match line {
                 Ok(line) => {
                     match line_buf.write(line) {
+                        // TODO: refactor into a writer that we can test
                         Some(line) => println!("{}", line), // XXX side effect
                         None => {},
                     }
@@ -46,6 +53,7 @@ impl LineBuffer {
         LineBuffer{line: String::new()}
     }
 
+    // XXX this is not actually a 'writer', rename to something idomatic
     fn write(&mut self, line: String) -> Option<String> {
         if line == self.line {
             return None
@@ -55,15 +63,18 @@ impl LineBuffer {
     }
 }
 
+// TODO: Define values for the error codes to match Linux error codes
 pub enum UniqErrors {
     NoFile
 }
 
 #[cfg(test)]
 mod tests {
+    // TODO: Add a test for Uniq::from_file
+
     #[test]
     fn run() {
-        
+        // TODO test me!
     }
 
     #[test]
