@@ -4,7 +4,6 @@ use std::path::Path;
 
 // TODO: Add docstrings
 
-// TODO: Define values for the error codes to match Linux error codes
 pub enum UniqErrors {
     NoFile,
     ReadError,
@@ -105,12 +104,37 @@ mod tests {
 
     #[test]
     fn from_file() {
-        todo!();
+        let u = super::Uniq::from_file("test/testlines");
+        match u {
+            Ok(mut u) => {
+                let mut l = String::new();
+                assert_ne!(u.reader.read_line(&mut l).unwrap(), 0);
+            }
+            Err(_) => {
+                panic!("unexpected error opening file");
+            }
+        };
     }
 
     #[test]
     fn run() {
-        todo!();
+        use std::io::{BufReader, BufWriter, Cursor};
+        let line_cursor = Cursor::new("a\nb\nb\nc");
+        let mut u = super::Uniq::new();
+        u.reader = Box::new(BufReader::new(line_cursor));
+        let writer = BufWriter::new(Vec::new());
+        u.writer = Box::new(writer);
+        match u.run() {
+            Ok(_) => {}
+            Err(_) => panic!("run should not have returned error"),
+        }
+        // TODO: check what was written
+    }
+
+    #[test]
+    fn new_linebuffer() {
+        let line_buf = super::LineBuffer::new();
+        assert_eq!(line_buf.line.len(), 0);
     }
 
     #[test]
@@ -124,19 +148,19 @@ mod tests {
         let mut line_buf = super::LineBuffer::new();
         match line_buf.write(lines[0].to_string()) {
             Some(l) => assert_eq!(l, lines[0]),
-            None => panic!("bad line"),
+            None => panic!("unexpected None"),
         }
         match line_buf.write(lines[1].to_string()) {
             Some(l) => assert_eq!(l, lines[1]),
-            None => panic!("bad line"),
+            None => panic!("unexpected None"),
         }
         match line_buf.write(lines[2].to_string()) {
             Some(l) => assert_ne!(l, lines[2]),
-            None => assert!(true),
+            None => {}
         }
         match line_buf.write(lines[3].to_string()) {
             Some(l) => assert_eq!(l, lines[3]),
-            None => panic!("bad line"),
+            None => panic!("unexpected None"),
         }
     }
 }
