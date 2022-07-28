@@ -18,11 +18,11 @@
        -i, --ignore-case
               ignore differences in case when comparing
 
-Fields
+       Fields
        -f, --skip-fields=N
               avoid comparing the first N fields
 
-Future
+       Future
        -w, --check-chars=N
               compare no more than N characters in lines
 
@@ -32,8 +32,7 @@ Future
        -u, --unique
               only print unique lines
 
-Groups
-
+       Groups
        --group[=METHOD]
               show all items, separating groups with an empty line;
               METHOD={separate(default),prepend,append,both}
