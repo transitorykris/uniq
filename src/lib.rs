@@ -56,7 +56,7 @@ impl Uniq {
                     if !self.case {
                         test_line = line.to_lowercase().clone();
                     }
-                    if line_buf.write(test_line).is_some() {
+                    if line_buf.is_uniq(test_line).is_some() {
                         match write!(self.writer, "{}", line) {
                             Ok(_) => {self.writer.flush().unwrap()},    // safe to unwrap
                             Err(_) => return Err(UniqErrors::WriteError),
@@ -81,7 +81,7 @@ impl LineBuffer {
     }
 
     // XXX this is not actually a 'writer', rename to something idomatic
-    fn write(&mut self, line: String) -> Option<String> {
+    fn is_uniq(&mut self, line: String) -> Option<String> {
         if line == self.line {
             return None;
         }
@@ -149,19 +149,19 @@ mod tests {
             "This is not one",
         ];
         let mut line_buf = super::LineBuffer::new();
-        match line_buf.write(lines[0].to_string()) {
+        match line_buf.is_uniq(lines[0].to_string()) {
             Some(l) => assert_eq!(l, lines[0]),
             None => panic!("unexpected None"),
         }
-        match line_buf.write(lines[1].to_string()) {
+        match line_buf.is_uniq(lines[1].to_string()) {
             Some(l) => assert_eq!(l, lines[1]),
             None => panic!("unexpected None"),
         }
-        match line_buf.write(lines[2].to_string()) {
+        match line_buf.is_uniq(lines[2].to_string()) {
             Some(l) => assert_ne!(l, lines[2]),
             None => {}
         }
-        match line_buf.write(lines[3].to_string()) {
+        match line_buf.is_uniq(lines[3].to_string()) {
             Some(l) => assert_eq!(l, lines[3]),
             None => panic!("unexpected None"),
         }
