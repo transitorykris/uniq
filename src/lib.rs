@@ -43,60 +43,38 @@ impl Uniq {
         Ok(u)
     }
 
-    // IMPORTANT TODO!
-    // The logic needs to be changed to reproduce linux's uniq behavior
-    // of outputting a line only after a new uniq line is found. It matters
-    // for features like prefixing counts of occurrences.
-    //
     // TODO: Consider refactoring into an iterator to increase testability
     pub fn run(&mut self) -> Result<(), UniqErrors> {
-        let mut line_buf = LineBuffer::new();
-
+        let mut prev_line = String::new();
         loop {
             let mut line = String::new();
             match self.reader.read_line(&mut line) {
                 Ok(0) => return Ok(()), // Got 0 bytes, EOF
                 Ok(_) => {
-                    let mut test_line = line.clone();
-                    if self.ignore_case {
-                        test_line = line.to_lowercase().clone();
+                    // we need to suppress printing the first line we receive
+                    if prev_line.is_empty() { prev_line = line.clone(); }
+
+                    if (line == prev_line) ||
+                        self.ignore_case && line.to_lowercase() == prev_line.to_lowercase() {
+                        continue
                     }
-                    if line_buf.is_uniq(test_line).is_some() {
-                        Uniq::write(self, line)?;
-                    }
-                }
+
+                    // we have a new uniq line, write out the previously repeated line
+                    Uniq::write(self, &prev_line)?;
+
+                    prev_line = line;
+                },
                 Err(_) => return Err(UniqErrors::ReadError),
             }
         }
     }
 
-    fn write(&mut self, line: String) -> Result<(), UniqErrors> {
+    fn write(&mut self, line: &str) -> Result<(), UniqErrors> {
         match write!(self.writer, "{}", line) {
             Ok(_) => {self.writer.flush().unwrap()},    // safe to unwrap
             Err(_) => return Err(UniqErrors::WriteError),
         };
         Ok(())
-    }
-}
-
-struct LineBuffer {
-    line: String,
-}
-
-impl LineBuffer {
-    fn new() -> LineBuffer {
-        LineBuffer {
-            line: String::new(),
-        }
-    }
-
-    // XXX this is not actually a 'writer', rename to something idomatic
-    fn is_uniq(&mut self, line: String) -> Option<String> {
-        if line == self.line {
-            return None;
-        }
-        self.line = line.clone();
-        Some(line)
     }
 }
 
@@ -142,38 +120,5 @@ mod tests {
         }
         // TODO: check what was written
         // TODO: add a test for case sensitivity
-    }
-
-    #[test]
-    fn new_linebuffer() {
-        let line_buf = super::LineBuffer::new();
-        assert_eq!(line_buf.line.len(), 0);
-    }
-
-    #[test]
-    fn linebuffer() {
-        let lines = vec![
-            "With some duplicate lines",
-            "here is one",
-            "here is one",
-            "This is not one",
-        ];
-        let mut line_buf = super::LineBuffer::new();
-        match line_buf.is_uniq(lines[0].to_string()) {
-            Some(l) => assert_eq!(l, lines[0]),
-            None => panic!("unexpected None"),
-        }
-        match line_buf.is_uniq(lines[1].to_string()) {
-            Some(l) => assert_eq!(l, lines[1]),
-            None => panic!("unexpected None"),
-        }
-        match line_buf.is_uniq(lines[2].to_string()) {
-            Some(l) => assert_ne!(l, lines[2]),
-            None => {}
-        }
-        match line_buf.is_uniq(lines[3].to_string()) {
-            Some(l) => assert_eq!(l, lines[3]),
-            None => panic!("unexpected None"),
-        }
     }
 }
