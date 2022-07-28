@@ -15,6 +15,7 @@ pub struct Uniq {
     writer: Box<dyn Write>,
 
     pub ignore_case: bool,
+    pub count: bool,
 }
 
 impl Default for Uniq {
@@ -23,6 +24,7 @@ impl Default for Uniq {
             reader: Box::new(BufReader::new(std::io::stdin())),
             writer: Box::new(BufWriter::new(std::io::stdout())),
             ignore_case: false,
+            count: false,
         }
     }
 }
@@ -46,11 +48,13 @@ impl Uniq {
     // TODO: Consider refactoring into an iterator to increase testability
     pub fn run(&mut self) -> Result<(), UniqErrors> {
         let mut prev_line = String::new();
+        let mut count = 0;
         loop {
             let mut line = String::new();
             match self.reader.read_line(&mut line) {
                 Ok(0) => return Ok(()), // Got 0 bytes, EOF
                 Ok(_) => {
+                    count += 1;
                     // we need to suppress printing the first line we receive
                     if prev_line.is_empty() { prev_line = line.clone(); }
 
@@ -60,13 +64,27 @@ impl Uniq {
                     }
 
                     // we have a new uniq line, write out the previously repeated line
-                    Uniq::write(self, &prev_line)?;
+                    if self.count {
+                        Self::write(self, &Uniq::format_count(count, &prev_line))?;
+                    } else {
+                        Self::write(self, &prev_line)?;
+                    }
 
                     prev_line = line;
+                    count = 0;
                 },
                 Err(_) => return Err(UniqErrors::ReadError),
             }
         }
+    }
+
+    fn format_count(count: i32, string: &str) -> String {
+        let mut out = String::new();
+        out.push_str("   ");
+        out.push_str(&count.to_string());
+        out.push(' ');
+        out.push_str(&string);
+        out.to_string()
     }
 
     fn write(&mut self, line: &str) -> Result<(), UniqErrors> {
@@ -84,12 +102,14 @@ mod tests {
     fn default() {
         let u = super::Uniq::default();
         assert!(!u.ignore_case);
+        assert!(!u.count);
     }
 
     #[test]
     fn new() {
         let u = super::Uniq::default();
         assert!(!u.ignore_case);
+        assert!(!u.count);
     }
 
     #[test]

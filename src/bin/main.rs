@@ -10,6 +10,10 @@ struct Args {
 
     #[clap(short, long)]
     ignore_case: bool,
+
+    #[clap(short,long)]
+    count: bool,
+
     // TODO: other feature flags of a typical uniq implementation
 }
 
@@ -29,6 +33,10 @@ fn main() -> ExitCode {
 
     if args.ignore_case {
         u.ignore_case = true;
+    }
+
+    if args.count {
+        u.count = true;
     }
 
     match u.run() {
