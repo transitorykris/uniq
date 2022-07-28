@@ -79,12 +79,7 @@ impl Uniq {
     }
 
     fn format_count(count: i32, string: &str) -> String {
-        let mut out = String::new();
-        out.push_str("   ");
-        out.push_str(&count.to_string());
-        out.push(' ');
-        out.push_str(&string);
-        out.to_string()
+        format!("   {} {}", count, string)
     }
 
     fn write(&mut self, line: &str) -> Result<(), UniqErrors> {
