@@ -27,6 +27,10 @@ fn main() -> ExitCode {
         None => {}
     };
 
+    if args.case {
+        u.case = false;
+    }
+
     match u.run() {
         Ok(_) => {}
         Err(_) => {

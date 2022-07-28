@@ -14,9 +14,7 @@ pub struct Uniq {
     reader: Box<dyn BufRead>,
     writer: Box<dyn Write>,
 
-    // TODO: complete case sensitivity feeature
-    #[allow(dead_code)]
-    case: bool, // true if case sensitive, false if case insensitive
+    pub case: bool, // true if case sensitive, false if case insensitive
 }
 
 impl Default for Uniq {
@@ -54,9 +52,13 @@ impl Uniq {
             match self.reader.read_line(&mut line) {
                 Ok(0) => return Ok(()), // Got 0 bytes, EOF
                 Ok(_) => {
-                    if let Some(l) = line_buf.write(line) {
-                        match write!(self.writer, "{}", l) {
-                            Ok(_) => {}
+                    let mut test_line = line.clone();
+                    if !self.case {
+                        test_line = line.to_lowercase().clone();
+                    }
+                    if line_buf.write(test_line).is_some() {
+                        match write!(self.writer, "{}", line) {
+                            Ok(_) => {self.writer.flush().unwrap()},    // safe to unwrap
                             Err(_) => return Err(UniqErrors::WriteError),
                         };
                     }
@@ -129,6 +131,7 @@ mod tests {
             Err(_) => panic!("run should not have returned error"),
         }
         // TODO: check what was written
+        // TODO: add a test for case sensitivity
     }
 
     #[test]
