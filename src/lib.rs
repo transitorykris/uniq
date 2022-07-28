@@ -103,11 +103,14 @@ mod tests {
         assert!(u.case);
     }
 
-    // TODO: Add a test for Uniq::from_file
+    #[test]
+    fn from_file() {
+        todo!();
+    }
 
     #[test]
     fn run() {
-        // TODO test me!
+        todo!();
     }
 
     #[test]
