@@ -1,6 +1,6 @@
 # uniq
 
-       Filter adjacent matching lines from INPUT (or standard input),
+       ```Filter adjacent matching lines from INPUT (or standard input),
        writing to OUTPUT (or standard output).
 
        With no options, matching lines are merged to the first
@@ -41,6 +41,4 @@ Groups
        --all-repeated[=METHOD]
               like -D, but allow separating groups with an empty line;
               METHOD={none(default),prepend,separate}
-
-Assumes
-- \n
+```
