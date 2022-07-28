@@ -118,7 +118,17 @@ mod tests {
 
     #[test]
     fn run() {
-        //todo!();
+        use std::io::{BufReader, BufWriter, Cursor};
+        let line_cursor = Cursor::new("a\nb\nb\nc");
+        let mut u = super::Uniq::new();
+        u.reader = Box::new(BufReader::new(line_cursor));
+        let writer = BufWriter::new(Vec::new());
+        u.writer = Box::new(writer);
+        match u.run() {
+            Ok(_) => {}
+            Err(_) => panic!("run should not have returned error"),
+        }
+        // TODO: check what was written
     }
 
     #[test]
