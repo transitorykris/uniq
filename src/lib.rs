@@ -14,7 +14,7 @@ pub struct Uniq {
     reader: Box<dyn BufRead>,
     writer: Box<dyn Write>,
 
-    pub case: bool, // true if case sensitive, false if case insensitive
+    pub ignore_case: bool,
 }
 
 impl Default for Uniq {
@@ -22,7 +22,7 @@ impl Default for Uniq {
         Uniq {
             reader: Box::new(BufReader::new(std::io::stdin())),
             writer: Box::new(BufWriter::new(std::io::stdout())),
-            case: true,
+            ignore_case: false,
         }
     }
 }
@@ -53,7 +53,7 @@ impl Uniq {
                 Ok(0) => return Ok(()), // Got 0 bytes, EOF
                 Ok(_) => {
                     let mut test_line = line.clone();
-                    if !self.case {
+                    if self.ignore_case {
                         test_line = line.to_lowercase().clone();
                     }
                     if line_buf.is_uniq(test_line).is_some() {
@@ -100,13 +100,13 @@ mod tests {
     #[test]
     fn default() {
         let u = super::Uniq::default();
-        assert!(u.case);
+        assert!(!u.ignore_case);
     }
 
     #[test]
     fn new() {
         let u = super::Uniq::default();
-        assert!(u.case);
+        assert!(!u.ignore_case);
     }
 
     #[test]

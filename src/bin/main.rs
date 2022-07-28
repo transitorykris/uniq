@@ -8,8 +8,8 @@ struct Args {
     #[clap(value_parser)]
     name: Option<String>,
 
-    #[clap(short)]
-    case: bool,
+    #[clap(short, long)]
+    ignore_case: bool,
     // TODO: other feature flags of a typical uniq implementation
 }
 
@@ -27,8 +27,8 @@ fn main() -> ExitCode {
         None => {}
     };
 
-    if args.case {
-        u.case = false;
+    if args.ignore_case {
+        u.ignore_case = true;
     }
 
     match u.run() {
