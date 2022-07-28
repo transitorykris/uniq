@@ -35,7 +35,6 @@ impl Uniq {
         Default::default()
     }
 
-    // TODO take a path not a string
     pub fn from_file<P: AsRef<Path>>(filename: P) -> Result<Uniq, UniqErrors> {
         let mut u: Uniq = Uniq::new();
         let text_file = File::open(filename);
