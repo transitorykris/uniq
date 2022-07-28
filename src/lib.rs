@@ -1,6 +1,6 @@
 use std::fs::File;
-use std::path::Path;
 use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::path::Path;
 
 // TODO: Add docstrings
 
@@ -39,11 +39,12 @@ impl Uniq {
     pub fn from_file<P: AsRef<Path>>(filename: P) -> Result<Uniq, UniqErrors> {
         let mut u: Uniq = Uniq::new();
         let text_file = File::open(filename);
-        let text_raw = match text_file {
-            Ok(t) => t,
+        match text_file {
+            Ok(t) => {
+                u.reader = Box::new(BufReader::new(t));
+            }
             Err(_) => return Err(UniqErrors::NoFile),
         };
-        u.reader = Box::new(BufReader::new(text_raw));
         Ok(u)
     }
 
