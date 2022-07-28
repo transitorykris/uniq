@@ -57,15 +57,20 @@ impl Uniq {
                         test_line = line.to_lowercase().clone();
                     }
                     if line_buf.is_uniq(test_line).is_some() {
-                        match write!(self.writer, "{}", line) {
-                            Ok(_) => {self.writer.flush().unwrap()},    // safe to unwrap
-                            Err(_) => return Err(UniqErrors::WriteError),
-                        };
+                        Uniq::write(self, line)?;
                     }
                 }
                 Err(_) => return Err(UniqErrors::ReadError),
             }
         }
+    }
+
+    fn write(&mut self, line: String) -> Result<(), UniqErrors> {
+        match write!(self.writer, "{}", line) {
+            Ok(_) => {self.writer.flush().unwrap()},    // safe to unwrap
+            Err(_) => return Err(UniqErrors::WriteError),
+        };
+        Ok(())
     }
 }
 
