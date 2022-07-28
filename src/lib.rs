@@ -43,7 +43,12 @@ impl Uniq {
         Ok(u)
     }
 
-    // Consider refactoring into an iterator to increase testability
+    // IMPORTANT TODO!
+    // The logic needs to be changed to reproduce linux's uniq behavior
+    // of outputting a line only after a new uniq line is found. It matters
+    // for features like prefixing counts of occurrences.
+    //
+    // TODO: Consider refactoring into an iterator to increase testability
     pub fn run(&mut self) -> Result<(), UniqErrors> {
         let mut line_buf = LineBuffer::new();
 
