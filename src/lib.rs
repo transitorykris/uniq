@@ -3,6 +3,7 @@ use std::io::{BufReader, BufRead};
 
 // TODO: Add docstrings
 
+#[allow(dead_code)] // temp while refactoring
 pub struct Uniq {
     filename: String,   // XXX use Path here instead of String for safety
 
