@@ -4,7 +4,6 @@ use std::path::Path;
 
 // TODO: Add docstrings
 
-// TODO: Define values for the error codes to match Linux error codes
 pub enum UniqErrors {
     NoFile,
     ReadError,
