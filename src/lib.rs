@@ -37,8 +37,7 @@ impl Uniq {
 
     pub fn from_file<P: AsRef<Path>>(filename: P) -> Result<Uniq, UniqErrors> {
         let mut u: Uniq = Uniq::new();
-        let text_file = File::open(filename);
-        match text_file {
+        match File::open(filename) {
             Ok(t) => {
                 u.reader = Box::new(BufReader::new(t));
             }
