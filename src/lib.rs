@@ -105,7 +105,16 @@ mod tests {
 
     #[test]
     fn from_file() {
-        //todo!();
+        let u = super::Uniq::from_file("test/testlines");
+        match u {
+            Ok(mut u) => {
+                let mut l = String::new();
+                assert_ne!(u.reader.read_line(&mut l).unwrap(), 0);
+            }
+            Err(_) => {
+                panic!("unexpected error opening file");
+            }
+        };
     }
 
     #[test]
@@ -132,7 +141,7 @@ mod tests {
         }
         match line_buf.write(lines[2].to_string()) {
             Some(l) => assert_ne!(l, lines[2]),
-            None => {},
+            None => {}
         }
         match line_buf.write(lines[3].to_string()) {
             Some(l) => assert_eq!(l, lines[3]),
