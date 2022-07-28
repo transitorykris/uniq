@@ -122,6 +122,12 @@ mod tests {
     }
 
     #[test]
+    fn new_linebuffer() {
+        let line_buf = super::LineBuffer::new();
+        assert_eq!(line_buf.line.len(), 0);
+    }
+
+    #[test]
     fn linebuffer() {
         let lines = vec![
             "With some duplicate lines",
