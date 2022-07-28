@@ -7,6 +7,7 @@ pub struct Uniq {
     filename: String,   // XXX use Path here instead of String for safety
 
     // TODO: complete case sensitivity feeature
+    #[allow(dead_code)]
     case: bool, // true if case sensitive, false if case insensitive
 }
 
