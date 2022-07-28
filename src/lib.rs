@@ -1,10 +1,18 @@
 use std::fs::File;
-use std::io::{BufReader, BufRead};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 
 // TODO: Add docstrings
 
+// TODO: Define values for the error codes to match Linux error codes
+pub enum UniqErrors {
+    NoFile,
+    ReadError,
+    WriteError,
+}
+
 pub struct Uniq {
-    filename: String,   // XXX use Path here instead of String for safety
+    reader: Box<dyn BufRead>,
+    writer: Box<dyn Write>,
 
     // TODO: complete case sensitivity feeature
     #[allow(dead_code)]
@@ -13,7 +21,11 @@ pub struct Uniq {
 
 impl Default for Uniq {
     fn default() -> Uniq {
-        Uniq { filename: "".to_string(), case: true }   // XXX make the default stdin
+        Uniq {
+            reader: Box::new(BufReader::new(std::io::stdin())),
+            writer: Box::new(BufWriter::new(std::io::stdout())),
+            case: true,
+        }
     }
 }
 
@@ -21,37 +33,38 @@ impl Uniq {
     pub fn new() -> Self {
         Default::default()
     }
-    
-    pub fn from_file(filename: String, case: bool) -> Uniq {
-        // TODO: open the file here and store a buffer in struct Uniq
-        Uniq { filename, case }
-    }
 
-    // TODO: Refactor to take in a generic buffer, move file handling elsewhere
-    // Consider refactoring into an iterator to increase testability
-    pub fn run(&self) -> Result<(), UniqErrors> {
-        let text_file = File::open(&self.filename); // XXX a buffer of some kind
+    // TODO take a path not a string
+    pub fn from_file(filename: String) -> Result<Uniq, UniqErrors> {
+        let mut u: Uniq = Uniq::new();
+        let text_file = File::open(filename);
         let text_raw = match text_file {
             Ok(t) => t,
             Err(_) => return Err(UniqErrors::NoFile),
         };
-        let reader = BufReader::new(text_raw);
-        
+        u.reader = Box::new(BufReader::new(text_raw));
+        Ok(u)
+    }
+
+    // Consider refactoring into an iterator to increase testability
+    pub fn run(&mut self) -> Result<(), UniqErrors> {
         let mut line_buf = LineBuffer::new();
-    
-        for line in reader.lines() {
-            match line {
-                Ok(line) => {
-                    match line_buf.write(line) {
-                        // TODO: refactor into a writer that we can test
-                        Some(line) => println!("{}", line), // XXX side effect
-                        None => {},
+
+        loop {
+            let mut line = String::new();
+            match self.reader.read_line(&mut line) {
+                Ok(0) => return Ok(()), // Got 0 bytes, EOF
+                Ok(_) => {
+                    if let Some(l) = line_buf.write(line) {
+                        match write!(self.writer, "{}", l) {
+                            Ok(_) => {}
+                            Err(_) => return Err(UniqErrors::WriteError),
+                        };
                     }
-                },
-                Err(e) => println!("err: {}", e),
+                }
+                Err(_) => return Err(UniqErrors::ReadError),
             }
         }
-        Ok(())
     }
 }
 
@@ -61,22 +74,19 @@ struct LineBuffer {
 
 impl LineBuffer {
     fn new() -> LineBuffer {
-        LineBuffer{line: String::new()}
+        LineBuffer {
+            line: String::new(),
+        }
     }
 
     // XXX this is not actually a 'writer', rename to something idomatic
     fn write(&mut self, line: String) -> Option<String> {
         if line == self.line {
-            return None
+            return None;
         }
         self.line = line.clone();
         Some(line)
     }
-}
-
-// TODO: Define values for the error codes to match Linux error codes
-pub enum UniqErrors {
-    NoFile
 }
 
 #[cfg(test)]
@@ -84,14 +94,12 @@ mod tests {
     #[test]
     fn default() {
         let u = super::Uniq::default();
-        assert_eq!(u.filename, "".to_string(),);
         assert!(u.case);
     }
 
     #[test]
     fn new() {
         let u = super::Uniq::default();
-        assert_eq!(u.filename, "".to_string(),);
         assert!(u.case);
     }
 
@@ -109,7 +117,7 @@ mod tests {
             "here is one",
             "here is one",
             "This is not one",
-            ];
+        ];
         let mut line_buf = super::LineBuffer::new();
         match line_buf.write(lines[0].to_string()) {
             Some(l) => assert_eq!(l, lines[0]),
