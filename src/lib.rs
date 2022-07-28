@@ -11,7 +11,17 @@ pub struct Uniq {
     case: bool, // true if case sensitive, false if case insensitive
 }
 
+impl Default for Uniq {
+    fn default() -> Uniq {
+        Uniq { filename: "".to_string(), case: true }   // XXX make the default stdin
+    }
+}
+
 impl Uniq {
+    pub fn new() -> Self {
+        Default::default()
+    }
+    
     pub fn from_file(filename: String, case: bool) -> Uniq {
         // TODO: open the file here and store a buffer in struct Uniq
         Uniq { filename, case }
@@ -71,6 +81,20 @@ pub enum UniqErrors {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn default() {
+        let u = super::Uniq::default();
+        assert_eq!(u.filename, "".to_string(),);
+        assert!(u.case);
+    }
+
+    #[test]
+    fn new() {
+        let u = super::Uniq::default();
+        assert_eq!(u.filename, "".to_string(),);
+        assert!(u.case);
+    }
+
     // TODO: Add a test for Uniq::from_file
 
     #[test]
