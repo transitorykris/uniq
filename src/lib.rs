@@ -1,4 +1,5 @@
 use std::fs::File;
+use std::path::Path;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 
 // TODO: Add docstrings
@@ -35,7 +36,7 @@ impl Uniq {
     }
 
     // TODO take a path not a string
-    pub fn from_file(filename: String) -> Result<Uniq, UniqErrors> {
+    pub fn from_file<P: AsRef<Path>>(filename: P) -> Result<Uniq, UniqErrors> {
         let mut u: Uniq = Uniq::new();
         let text_file = File::open(filename);
         let text_raw = match text_file {
