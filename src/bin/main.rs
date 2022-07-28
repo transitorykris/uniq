@@ -9,27 +9,30 @@ struct Args {
     name: Option<String>,
 
     #[clap(short)]
-   case: bool,
-
-   // TODO: other feature flags of a typical uniq implementation
+    case: bool,
+    // TODO: other feature flags of a typical uniq implementation
 }
 
 fn main() -> ExitCode {
     let args = Args::parse();
-    
-    let filename = match args.name {
-        Some(f) => f,
-        None => "/dev/stdin".to_string(),   // TODO use standard lib stdio
+
+    let mut u = uniq::Uniq::new();
+    match args.name {
+        Some(f) => {
+            u = match uniq::Uniq::from_file(f) {
+                Ok(u) => u,
+                Err(_) => return ExitCode::from(2),
+            };
+        }
+        None => {}
     };
 
-    let u = uniq::Uniq::from_file(filename, args.case);
-
     match u.run() {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(_) => {
             // TODO: return proper values here
             return ExitCode::from(1);
-        },
+        }
     };
     ExitCode::from(0)
 }
