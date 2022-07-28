@@ -58,7 +58,7 @@ impl Uniq {
                     }
                     if line_buf.write(test_line).is_some() {
                         match write!(self.writer, "{}", line) {
-                            Ok(_) => {},
+                            Ok(_) => {self.writer.flush().unwrap()},    // safe to unwrap
                             Err(_) => return Err(UniqErrors::WriteError),
                         };
                     }
