@@ -124,16 +124,19 @@ mod tests {
     #[test]
     fn run() {
         use std::io::{BufReader, BufWriter, Cursor};
-        let line_cursor = Cursor::new("a\nb\nb\nc");
+        let line_cursor = Cursor::new("a\nb\nb\nc\nd\nd");
         let mut u = super::Uniq::new();
         u.reader = Box::new(BufReader::new(line_cursor));
-        let writer = BufWriter::new(Vec::new());
+        static mut OUTPUT: String = String::new();
+        let writer = unsafe{ BufWriter::new(OUTPUT.as_mut_vec()) };
         u.writer = Box::new(writer);
         match u.run() {
             Ok(_) => {}
             Err(_) => panic!("run should not have returned error"),
         }
-        // TODO: check what was written
+        let result = unsafe{ OUTPUT.clone() };
+        assert_eq!(result, "a\nb\nc\nd\n")
         // TODO: add a test for case sensitivity
+        // TODO: add a test case for duplicate counts
     }
 }
