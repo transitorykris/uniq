@@ -16,6 +16,8 @@ pub struct Uniq {
 
     pub ignore_case: bool,
     pub count: bool,
+
+    counter: usize,
 }
 
 impl Default for Uniq {
@@ -25,6 +27,7 @@ impl Default for Uniq {
             writer: Box::new(BufWriter::new(std::io::stdout())),
             ignore_case: false,
             count: false,
+            counter: 0,
         }
     }
 }
@@ -46,18 +49,14 @@ impl Uniq {
     }
 
     // TODO: Consider refactoring into an iterator to increase testability
+    // XXX be careful, the counting of duplicate lines here is awkward
     pub fn run(&mut self) -> Result<(), UniqErrors> {
         let mut prev_line = String::new();
-        let mut count = 0;
         loop {
             let mut line = String::new();
             match self.reader.read_line(&mut line) {
                 Ok(0) => {
-                    if self.count {
-                        Self::write(self, &Uniq::format_count(count, &prev_line))?;
-                    } else {
-                        Self::write(self, &prev_line)?;
-                    }
+                    Self::write(self, &Uniq::format_output(self, &prev_line))?;
                     return Ok(()) // Got 0 bytes, EOF
                 },
                 Ok(_) => {
@@ -66,27 +65,27 @@ impl Uniq {
 
                     if (line == prev_line) ||
                         self.ignore_case && line.to_lowercase() == prev_line.to_lowercase() {
-                        count += 1;
+                        self.counter += 1;
                         continue
                     }
 
                     // we have a new uniq line, write out the previously repeated line
-                    if self.count {
-                        Self::write(self, &Uniq::format_count(count, &prev_line))?;
-                    } else {
-                        Self::write(self, &prev_line)?;
-                    }
+                    Self::write(self, &Uniq::format_output(self, &prev_line))?;
 
                     prev_line = line;
-                    count = 1;
+                    self.counter = 1;
                 },
                 Err(_) => return Err(UniqErrors::ReadError),
             }
         }
     }
 
-    fn format_count(count: i32, string: &str) -> String {
-        format!("   {} {}", count, string)
+    fn format_output(&self, string: &str) -> String {
+        if self.count {
+            format!("   {} {}", self.counter, string)
+        } else {
+            string.to_string()
+        }
     }
 
     fn write(&mut self, line: &str) -> Result<(), UniqErrors> {
@@ -131,7 +130,7 @@ mod tests {
     #[test]
     fn run() {
         use std::io::{BufReader, BufWriter, Cursor};
-        let line_cursor = Cursor::new("a\nb\nb\nc\nd\nd");
+        let line_cursor = Cursor::new("a\nb\nb\nc\nd\nd\n");
         let mut u = super::Uniq::new();
         u.reader = Box::new(BufReader::new(line_cursor));
         static mut OUTPUT: String = String::new();
@@ -148,7 +147,7 @@ mod tests {
     #[test]
     fn run_ignore_case() {
         use std::io::{BufReader, BufWriter, Cursor};
-        let line_cursor = Cursor::new("a\nB\nb\nc\nd\nD");
+        let line_cursor = Cursor::new("a\nB\nb\nc\nd\nD\n");
         let mut u = super::Uniq::new();
         u.ignore_case = true;
         u.reader = Box::new(BufReader::new(line_cursor));
