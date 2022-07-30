@@ -127,6 +127,7 @@ mod tests {
         };
     }
 
+    // Below is a little ugly and truly unsafe, but it works for now
     #[test]
     fn run() {
         use std::io::{BufReader, BufWriter, Cursor};
